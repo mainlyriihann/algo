@@ -3,16 +3,19 @@
 #include<queue>
 #include<algorithm> 
 using namespace std;
+int cycle_start, cycle_end;
 bool dfs(int node, vector<vector<int> >& adj, vector<int>& parent, vector<int>& visited){
     visited[node] = 1;
     for(auto it: adj[node]){
+        if(it == parent[node]) continue;
         if(visited[it] == 0){
             parent[it] = node;
-            dfs(it,adj,parent, visited);
+            if(dfs(it,adj,parent, visited))
+            return true;
         }
-        else if(visited[it] && parent[node] != it){
-            // cycle found..
-            parent[it] = node;
+        else {
+            cycle_start = it;
+            cycle_end = node;
             return true;
         }
     }
@@ -33,30 +36,30 @@ int main(){
     for(int i = 1; i<= n; i++){
         parent[i] = i;
     }
-    bool cycle;
-    int start;
+    bool found;
     for(int i =1; i<n+1; i++){
         
         if(visited[i] == 0){
-             cycle = dfs(i,adj,parent,visited);
+             found = dfs(i,adj,parent,visited);
         }
-        if(cycle) {start = i; break;}
+        if(found) break;
     }
-    if(!cycle) cout << "IMPOSSIBLE";
+    if(!found) cout << "IMPOSSIBLE";
     else{ 
-        vector<int> ans;
-        int curr = start;
-        bool flag = true;
-        while(flag){
-            ans.push_back(curr);
-            int par = parent[curr];
-            curr = parent[curr];
-            if(curr == start) flag = false;
+        vector<int> cycle;
+        int cur = cycle_end;
+        cycle.push_back(cycle_start);
+        while(cur != cycle_start){
+           cycle.push_back(cur);
+           cur = parent[cur];
         }
-        int d = ans.size();
+        cycle.push_back(cycle_start);
+
+    reverse(cycle.begin(), cycle.end());
+        int d = cycle.size();
         cout << d << endl;
         for(int i =0; i< d; i++){
-            cout << ans[i] << " ";
+            cout << cycle[i] << " ";
         }
     }
 }
